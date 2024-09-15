@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class S3Files extends AbstractMigration
+final class FileStorage extends AbstractMigration
 {
     public function change(): void
     {
@@ -26,7 +26,7 @@ final class S3Files extends AbstractMigration
             ->addColumn('created_date', 'datetime')
             ->addColumn('expiry_date', 'datetime', ['null' => true])
             ->addColumn('user_id', 'integer', ['signed' => false])
-            ->addForeignKey('file_id', 's3_files', 'id')
+            ->addForeignKey('file_id', 'stored_file', 'id')
             ->addForeignKey('user_id', 'user', 'id')
             ->create();
     }
