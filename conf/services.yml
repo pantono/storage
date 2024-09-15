@@ -1,0 +1,5 @@
+FileStorage:
+  class: FileStorage\FileStorage
+FileSystem:
+  class: FileStore\Factory\FileSystemFactory
+  alias: League\Flysystem\Filesystem
