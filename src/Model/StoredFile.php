@@ -4,7 +4,10 @@ namespace Pantono\Storage\Model;
 
 use Pantono\Database\Traits\SavableModel;
 use Pantono\Contracts\Attributes\NoSave;
+use Pantono\Contracts\Attributes\Locator;
+use Pantono\Storage\FileStorage;
 
+#[Locator(className: FileStorage::class, methodName: 'getFileById')]
 class StoredFile
 {
     use SavableModel;
