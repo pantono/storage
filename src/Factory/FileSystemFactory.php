@@ -14,17 +14,19 @@ class FileSystemFactory implements FactoryInterface
 {
     private string $dsn;
     private array $options;
+    private array $fileSystemOptions;
 
-    public function __construct(string $dsn, array $options = [])
+    public function __construct(string $dsn, array $adapterOptions = [], array $fileSystemOptions = [])
     {
         $this->dsn = $dsn;
-        $this->options = $options;
+        $this->options = $adapterOptions;
+        $this->fileSystemOptions = $fileSystemOptions;
     }
 
     public function createInstance(): Filesystem
     {
         $adapter = $this->getAdapter();
-        return new Filesystem($adapter);
+        return new Filesystem($adapter, $this->fileSystemOptions);
     }
 
     public function getAdapter(): FilesystemAdapter
