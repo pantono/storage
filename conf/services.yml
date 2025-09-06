@@ -1,5 +1,5 @@
 FileStorage:
-  class: FileStorage\FileStorage
+  class: Pantono\Storage\FileStorage
 FileSystem:
   class: FileStore\Factory\FileSystemFactory
   alias: League\Flysystem\Filesystem
