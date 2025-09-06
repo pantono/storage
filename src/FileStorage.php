@@ -44,7 +44,7 @@ class FileStorage
 
         $remoteFilename = $filename;
         if ($prefixDate) {
-            $remoteFilename = date('dmyYHis') . $filename;
+            $remoteFilename = date('dmYHis') . $filename;
         }
         $additionalConfig['visibility'] = $visibility;
         $this->filesystem->write($remoteFilename, $fileData, $additionalConfig);
