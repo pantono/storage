@@ -42,7 +42,7 @@ class FileSystemFactory implements FactoryInterface
             $key = $dsn->getUser();
             $pass = $dsn->getPassword();
             $prefix = $this->options['prefix'] ?? '';
-            $client = new S3Client([
+            $clientConfig = [
                 'endpoint' => 'https://' . $host . '/',
                 'version' => 'latest',
                 'region' => $region,
@@ -50,7 +50,15 @@ class FileSystemFactory implements FactoryInterface
                     'key' => $key,
                     'secret' => $pass
                 ]
-            ]);
+            ];
+
+            if (array_key_exists('use_path_style_endpoint', $this->options)) {
+                $clientConfig['use_path_style_endpoint'] = (bool)$this->options['use_path_style_endpoint'];
+            } elseif (!empty($clientConfig['endpoint'])) {
+                $clientConfig['use_path_style_endpoint'] = true;
+            }
+
+            $client = new S3Client($clientConfig);
             return new AwsS3V3Adapter($client, $bucket, $prefix);
         }
         if ($dsn->getScheme() === 'file') {
