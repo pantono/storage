@@ -57,6 +57,7 @@ class FileStorage
         $file->setFilesize(mb_strlen($fileData));
         $file->setFileData($fileData);
         $file->setUri($uri);
+        $this->saveFile($file);
         return $file;
     }
 
