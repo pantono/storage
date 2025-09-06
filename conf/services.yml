@@ -6,5 +6,6 @@ FileSystem:
     - League\Flysystem\Filesystem
   parameters:
     - $filesystem.dsn
+    - "@Logger"
     - $filesystem.adapter_options
     - $filesystem.options

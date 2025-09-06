@@ -9,16 +9,20 @@ use Aws\S3\S3Client;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use Pantono\Logger\Logger;
+use Psr\Log\LoggerInterface;
 
 class FileSystemFactory implements FactoryInterface
 {
     private string $dsn;
+    private Logger $logger;
     private array $options;
     private array $fileSystemOptions;
 
-    public function __construct(string $dsn, array $adapterOptions = [], array $fileSystemOptions = [])
+    public function __construct(string $dsn, Logger $Logger, array $adapterOptions = [], array $fileSystemOptions = [])
     {
         $this->dsn = $dsn;
+        $this->logger = $Logger;
         $this->options = $adapterOptions;
         $this->fileSystemOptions = $fileSystemOptions;
     }
@@ -43,7 +47,6 @@ class FileSystemFactory implements FactoryInterface
             $pass = $dsn->getPassword();
             $prefix = $this->options['prefix'] ?? '';
             $clientConfig = [
-                'endpoint' => 'https://' . $host . '/',
                 'version' => 'latest',
                 'region' => $region,
                 'credentials' => [
@@ -51,11 +54,19 @@ class FileSystemFactory implements FactoryInterface
                     'secret' => $pass
                 ]
             ];
+            if ($host) {
+                $clientConfig['endpoint'] = 'https://' . $host . '/';
+            }
 
             if (array_key_exists('use_path_style_endpoint', $this->options)) {
                 $clientConfig['use_path_style_endpoint'] = (bool)$this->options['use_path_style_endpoint'];
             } elseif (!empty($clientConfig['endpoint'])) {
                 $clientConfig['use_path_style_endpoint'] = true;
+            }
+
+            $logger = $this->logger->createLogger('s3_file_storage');
+            if ($logger instanceof LoggerInterface) {
+                $clientConfig['logger'] = $logger;
             }
 
             $client = new S3Client($clientConfig);
