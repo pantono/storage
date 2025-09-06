@@ -12,6 +12,8 @@ use Pantono\Storage\Event\PostStoredFileSaveEvent;
 use League\Flysystem\Filesystem;
 use Pantono\Contracts\Locator\UserInterface;
 use League\Flysystem\Visibility;
+use Symfony\Component\Console\Output\OutputInterface;
+use League\Flysystem\FileAttributes;
 
 class FileStorage
 {
@@ -76,6 +78,11 @@ class FileStorage
         return $this->hydrator->hydrate(StoredFile::class, $this->repository->getFileById($id));
     }
 
+    public function getFileByFilename(string $filename): ?StoredFile
+    {
+        return $this->hydrator->hydrate(StoredFile::class, $this->repository->getFileByFilename($filename));
+    }
+
     /**
      * @return StoredFile[]
      */
@@ -83,6 +90,46 @@ class FileStorage
     {
         return $this->hydrator->hydrateSet(StoredFile::class, $this->repository->getFilesByFilter($filter));
     }
+
+    public function syncFiles(string $path = '/', ?OutputInterface $output = null): void
+    {
+        $listing = $this->filesystem->listContents($path);
+        foreach ($listing->getIterator() as $file) {
+            /**
+             * @var FileAttributes $file
+             */
+            if ($file->isFile()) {
+                $localFile = $this->getFileByFilename($file->path());
+                if (!$localFile) {
+                    $newFile = new StoredFile();
+                    $newFile->setFilename($file->path());
+                    $newFile->setFilesize($file->fileSize());
+                    $newFile->setOriginalFilename($file->path());
+                    $newFile->setUri($this->filesystem->publicUrl($file->path()));
+                    $uploaded = new \DateTimeImmutable();
+                    $mod = $file->lastModified();
+                    if ($mod) {
+                        $uploaded = \DateTimeImmutable::createFromFormat('U', (string)$mod);
+                        if (!$uploaded) {
+                            $uploaded = new \DateTimeImmutable();
+                        }
+                    }
+                    $newFile->setDateUploaded($uploaded);
+                    $extraData = $file->extraMetadata();
+                    if (isset($extraData['ETag'])) {
+                        $newFile->setEtag($extraData['ETag']);
+                    }
+                    $this->saveFile($newFile);
+                    if ($output) {
+                        $output->writeln('[' . date('d/m/Y H:i:s') . '] File ' . $file->path() . ' has been uploaded');
+                    }
+                }
+            } elseif ($file->type() === 'dir' && $file->path() !== '.' && $file->path() !== '..') {
+                $this->syncFiles($file->path(), $output);
+            }
+        }
+    }
+
 
     public function saveFile(StoredFile $file): void
     {

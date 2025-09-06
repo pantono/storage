@@ -18,6 +18,11 @@ class FileStorageRepository extends MysqlRepository
         return $this->selectSingleRow('stored_file', 'uri', $uri);
     }
 
+    public function getFileByFilename(string $filename): ?array
+    {
+        return $this->selectSingleRow('stored_file', 'filename', $filename);
+    }
+
     public function saveFile(StoredFile $file): void
     {
         $id = $this->insertOrUpdateCheck('stored_file', 'id', $file->getId(), $file->getAllData());
