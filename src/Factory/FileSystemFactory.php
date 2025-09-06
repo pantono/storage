@@ -34,11 +34,13 @@ class FileSystemFactory implements FactoryInterface
         $dsn = DsnParser::parse($this->dsn);
         if ($dsn->getScheme() === 's3') {
             $region = $this->options['region'] ?? 'eu-west-1';
-            $bucket = $dsn->getHost();
+            $bucket = $dsn->getPath();
+            $host = $dsn->getHost();
             $key = $dsn->getUser();
             $pass = $dsn->getPassword();
             $prefix = $this->options['prefix'] ?? '';
             $client = new S3Client([
+                'endpoint' => $host,
                 'version' => 'latest',
                 'region' => $region,
                 'credentials' => [
