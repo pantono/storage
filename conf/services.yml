@@ -2,4 +2,8 @@ FileStorage:
   class: Pantono\Storage\FileStorage
 FileSystem:
   class: Pantono\Storage\Factory\FileSystemFactory
-  alias: League\Flysystem\Filesystem
+  aliases:
+    - League\Flysystem\Filesystem
+  parameters:
+    - $filesystem.dsn
+    - $filesystem.options
