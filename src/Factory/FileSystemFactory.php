@@ -64,8 +64,8 @@ class FileSystemFactory implements FactoryInterface
                 $clientConfig['use_path_style_endpoint'] = true;
             }
 
-            $logger = $this->logger->createLogger('s3_file_storage');
-            if ($logger instanceof LoggerInterface) {
+            if (array_key_exists('use_log', $this->options) && $this->options['use_log']) {
+                $logger = $this->logger->createLogger('s3_file_storage');
                 $clientConfig['logger'] = $logger;
             }
 
