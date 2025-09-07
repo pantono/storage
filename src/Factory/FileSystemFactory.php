@@ -10,7 +10,7 @@ use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Pantono\Logger\Logger;
-use Psr\Log\LoggerInterface;
+use Aws\Handler\Guzzle\GuzzleHandler;
 
 class FileSystemFactory implements FactoryInterface
 {
@@ -65,8 +65,8 @@ class FileSystemFactory implements FactoryInterface
             }
 
             if (array_key_exists('use_log', $this->options) && $this->options['use_log']) {
-                $logger = $this->logger->createLogger('s3_file_storage');
-                $clientConfig['logger'] = $logger;
+                $logger = $this->logger->createLoggedHttpClient('s3_file_storage');
+                $clientConfig['http_handler'] = new GuzzleHandler($logger);
             }
 
             $client = new S3Client($clientConfig);
