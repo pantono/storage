@@ -16,7 +16,7 @@ final class FileStorage extends AbstractMigration
             ->addColumn('filesize', 'biginteger')
             ->addColumn('etag', 'string', ['null' => true])
             ->addColumn('acl', 'string', ['null' => true])
-            ->addColumn('uri', 'string')
+            ->addColumn('uri', 'text')
             ->addIndex('filename')
             ->create();
 
