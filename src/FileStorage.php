@@ -63,6 +63,14 @@ class FileStorage
         return $file;
     }
 
+    public function hydrateFileData(StoredFile $file): void
+    {
+        $contents = $this->filesystem->read($file->getFilename());
+        if ($contents) {
+            $file->setFileData($contents);
+        }
+    }
+
     public function openFileForUser(StoredFile $storedFile, UserInterface $user, ?\DateTimeImmutable $expiryDate = null): string
     {
         if ($expiryDate === null) {
