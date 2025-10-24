@@ -73,7 +73,7 @@ class FileSystemFactory implements FactoryInterface
             return new AwsS3V3Adapter($client, $bucket, $prefix);
         }
         if ($dsn->getScheme() === 'file') {
-            return new LocalFilesystemAdapter($dsn->getHost());
+            return new LocalFilesystemAdapter($dsn->getPath());
         }
 
         throw new \RuntimeException('Cannot find adapter from dsn');
