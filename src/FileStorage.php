@@ -88,7 +88,9 @@ class FileStorage
 
     public function getFileById(int $id): ?StoredFile
     {
-        return $this->hydrator->hydrate(StoredFile::class, $this->repository->getFileById($id));
+        return $this->hydrator->hydrateCached('stored_file_' . $id, StoredFile::class, function () use ($id) {
+            return $this->repository->getFileById($id);
+        });
     }
 
     public function getFileByFilename(string $filename): ?StoredFile
