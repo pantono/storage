@@ -38,15 +38,20 @@ class FileStorage
     public function uploadFile(
         string $filename,
         string $fileData,
-        bool   $uniquePrefix = true,
+        bool   $uniqueSuffix = true,
         string $visibility = Visibility::PRIVATE,
         array  $additionalConfig = []
     ): StoredFile
     {
 
         $remoteFilename = $filename;
-        if ($uniquePrefix) {
-            $remoteFilename = uniqid() . $filename;
+        if ($uniqueSuffix) {
+            $info = pathinfo($filename);
+            if ($info['dirname']) {
+                $remoteFilename = $info['dirname'] . DIRECTORY_SEPARATOR . $info['filename'] . '-' . uniqid() . '.' . $info['extension'];
+            } else {
+                $remoteFilename = $info['filename'] . '-' . uniqid() . '.' . $info['extension'];
+            }
         }
         $additionalConfig['visibility'] = $visibility;
         $this->filesystem->write($remoteFilename, $fileData, $additionalConfig);
