@@ -14,6 +14,7 @@ use Pantono\Contracts\Locator\UserInterface;
 use League\Flysystem\Visibility;
 use Symfony\Component\Console\Output\OutputInterface;
 use League\Flysystem\FileAttributes;
+use League\Flysystem\FilesystemException;
 
 class FileStorage
 {
@@ -120,7 +121,11 @@ class FileStorage
                     $newFile->setFilename($file->path());
                     $newFile->setFilesize($file->fileSize());
                     $newFile->setOriginalFilename($file->path());
-                    $newFile->setUri($this->filesystem->publicUrl($file->path()));
+                    try {
+                        $newFile->setUri($this->filesystem->publicUrl($file->path()));
+                    } catch (FilesystemException $e) {
+                        continue;
+                    }
                     $uploaded = new \DateTimeImmutable();
                     $mod = $file->lastModified();
                     if ($mod) {
