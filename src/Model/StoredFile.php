@@ -135,4 +135,10 @@ class StoredFile
     {
         $this->fileData = $fileData;
     }
+
+    public function getDataUri(): ?string
+    {
+        $mime = $this->getMimeType() ?: 'application/octet-stream';
+        return 'data:' . $mime . ';base64,' . base64_encode($this->getFileData());
+    }
 }
