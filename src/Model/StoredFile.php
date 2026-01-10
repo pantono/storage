@@ -22,6 +22,7 @@ class StoredFile
     private ?string $etag = null;
     private ?string $acl = null;
     private ?string $uri = null;
+    private ?string $mimeType = null;
     #[NoSave, Locator(methodName: 'getFileData', className: FileStorage::class), Lazy]
     private ?string $fileData = null;
 
@@ -113,6 +114,16 @@ class StoredFile
     public function setUri(?string $uri): void
     {
         $this->uri = $uri;
+    }
+
+    public function getMimeType(): ?string
+    {
+        return $this->mimeType;
+    }
+
+    public function setMimeType(?string $mimeType): void
+    {
+        $this->mimeType = $mimeType;
     }
 
     public function getFileData(): ?string

@@ -66,6 +66,10 @@ class FileStorage
         $file->setFileData($fileData);
         $file->setUri($uri);
         $this->saveFile($file);
+        $mime = $this->getMimeType($fileData);
+        if ($mime) {
+            $file->setMimeType($mime);
+        }
         return $file;
     }
 
@@ -173,5 +177,15 @@ class FileStorage
         $event->setCurrent($file);
         $event->setPrevious($previous);
         $this->dispatcher->dispatch($event);
+    }
+
+    private function getMimeType(string $fileData): ?string
+    {
+        if ($fileData === '') {
+            return null;
+        }
+
+        $fInfo = new \finfo(FILEINFO_MIME_TYPE);
+        return $fInfo->buffer($fileData) ?: null;
     }
 }
