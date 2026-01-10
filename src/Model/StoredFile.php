@@ -138,7 +138,17 @@ class StoredFile
 
     public function getDataUri(): ?string
     {
-        $mime = $this->getMimeType() ?: 'application/octet-stream';
+        $mime = $this->lookupMimeType() ?: 'application/octet-stream';
         return 'data:' . $mime . ';base64,' . base64_encode($this->getFileData());
+    }
+
+    private function lookupMimeType(): ?string
+    {
+        if ($this->getFileData() === '') {
+            return null;
+        }
+
+        $fInfo = new \finfo(FILEINFO_MIME_TYPE);
+        return $fInfo->buffer($this->getFileData()) ?: null;
     }
 }
