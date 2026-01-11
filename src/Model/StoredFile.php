@@ -7,6 +7,7 @@ use Pantono\Contracts\Attributes\NoSave;
 use Pantono\Contracts\Attributes\Locator;
 use Pantono\Storage\FileStorage;
 use Pantono\Contracts\Attributes\Lazy;
+use Pantono\Contracts\Attributes\FieldName;
 
 #[Locator(className: FileStorage::class, methodName: 'getFileById')]
 class StoredFile
@@ -23,7 +24,7 @@ class StoredFile
     private ?string $acl = null;
     private ?string $uri = null;
     private ?string $mimeType = null;
-    #[NoSave, Locator(methodName: 'getFileData', className: FileStorage::class), Lazy]
+    #[NoSave, Locator(methodName: 'getFileData', className: FileStorage::class), Lazy, FieldName('$this')]
     private ?string $fileData = null;
 
     public function getId(): ?int
