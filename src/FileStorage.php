@@ -103,6 +103,13 @@ class FileStorage
         });
     }
 
+    public function getFileByUri(string $uri): ?StoredFile
+    {
+        return $this->hydrator->hydrateCached('stored_file_uri_' . $uri, StoredFile::class, function () use ($uri) {
+            return $this->repository->getFileByUri($uri);
+        });
+    }
+
     public function getFileByFilename(string $filename): ?StoredFile
     {
         return $this->hydrator->hydrate(StoredFile::class, $this->repository->getFileByFilename($filename));

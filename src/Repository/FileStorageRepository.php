@@ -2,11 +2,11 @@
 
 namespace Pantono\Storage\Repository;
 
-use Pantono\Database\Repository\MysqlRepository;
+use Pantono\Database\Repository\DefaultRepository;
 use Pantono\Storage\Model\StoredFile;
 use Pantono\Storage\Filter\StoredFileFilter;
 
-class FileStorageRepository extends MysqlRepository
+class FileStorageRepository extends DefaultRepository
 {
     public function getFileById(int $id): ?array
     {
