@@ -48,7 +48,7 @@ class FileStorage
         $remoteFilename = $filename;
         if ($uniqueSuffix) {
             $info = pathinfo($filename);
-            if ($info['dirname']) {
+            if ($info['dirname'] && $info['dirname'] !== '.') {
                 $remoteFilename = $info['dirname'] . DIRECTORY_SEPARATOR . $info['filename'] . '-' . uniqid() . '.' . $info['extension'];
             } else {
                 $remoteFilename = $info['filename'] . '-' . uniqid() . '.' . $info['extension'];
