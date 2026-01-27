@@ -15,6 +15,7 @@ use League\Flysystem\Visibility;
 use Symfony\Component\Console\Output\OutputInterface;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemException;
+use Symfony\Component\Mime\MimeTypes;
 
 class FileStorage
 {
@@ -69,6 +70,9 @@ class FileStorage
         $mime = $this->getMimeType($fileData);
         if ($mime) {
             $file->setMimeType($mime);
+        }
+        if (!$file->getMimeType()) {
+            $file->setMimeType($this->getMimeFromExtension($filename));
         }
         return $file;
     }
@@ -194,5 +198,11 @@ class FileStorage
 
         $fInfo = new \finfo(FILEINFO_MIME_TYPE);
         return $fInfo->buffer($fileData) ?: null;
+    }
+
+    private function getMimeFromExtension(string $filename): ?string
+    {
+        $types = new MimeTypes();
+        return $types->guessMimeType($filename);
     }
 }
