@@ -8,8 +8,9 @@ use Pantono\Contracts\Attributes\Locator;
 use Pantono\Storage\FileStorage;
 use Pantono\Contracts\Attributes\Lazy;
 use Pantono\Contracts\Attributes\FieldName;
+use Pantono\Contracts\Attributes\DatabaseTable;
 
-#[Locator(className: FileStorage::class, methodName: 'getFileById')]
+#[Locator(methodName: 'getFileById', className: FileStorage::class), DatabaseTable(table: 'stored_files', idColumn: 'id')]
 class StoredFile
 {
     use SavableModel;
