@@ -49,6 +49,14 @@ class FileSystemFactory implements FactoryInterface
             $clientConfig = [
                 'version' => 'latest',
                 'region' => $region,
+                'retries' => [
+                    'mode' => 'adaptive', // or 'standard'
+                    'max_attempts' => 5,
+                ],
+                'http' => [
+                    'connect_timeout' => 5,
+                    'timeout' => 60,
+                ],
                 'credentials' => [
                     'key' => $key,
                     'secret' => $pass
