@@ -33,32 +33,37 @@ class FileStorageRepository extends DefaultRepository
 
     public function getFilesByFilter(StoredFileFilter $filter): array
     {
-        $select = $this->getDb()->select()->from('stored_file');
+        $select = $this->getDb()->select('f.*')->from('stored_file', 'f');
         if ($filter->getSearch()) {
-            $select->where('(filename like ?', '%' . $filter->getSearch() . '%')
-                ->orWhere('original_filename like ?', '%' . $filter->getSearch() . '%');
+            $select->where('(filename like :search or original_filename like :search)')
+                ->setParameter('search', '%' . $filter->getSearch() . '%');
         }
         if ($filter->getFilename()) {
-            $select->where('filename=?', $filter->getFilename());
+            $select->where('filename=:filename')
+                ->setParameter('filename', $filter->getFilename());
         }
         if ($filter->getOriginalFilename()) {
-            $select->where('original_filename=?', $filter->getOriginalFilename());
+            $select->where('original_filename=:original_filename')
+                ->setParameter('original_filename', $filter->getOriginalFilename());
         }
         if ($filter->getBucket()) {
-            $select->where('bucket=?', $filter->getBucket());
+            $select->where('bucket=:bucket')
+                ->setParameter('bucket', $filter->getBucket());
         }
         if ($filter->getMinFilesize()) {
-            $select->where('filesize >= ?', $filter->getMinFilesize());
+            $select->where('filesize >= :min_filesize')
+                ->setParameter('min_filesize', $filter->getMinFilesize());
         }
         if ($filter->getMaxFilesize()) {
-            $select->where('filesize <= ?', $filter->getMaxFilesize());
+            $select->where('filesize <= :max_filesize')
+                ->setParameter('max_filesize', $filter->getMaxFilesize());
         }
         if ($filter->getAcl()) {
-            $select->where('acl=?', $filter->getAcl());
+            $select->where('acl = :acl')
+                ->setParameter('acl', $filter->getAcl());
         }
 
-        $filter->setTotalResults($this->getCount($select));
-        $select->limitPage($filter->getPage(), $filter->getPerPage());
+        $this->applyCountAndLimit($select, $filter);
 
         return $this->getDb()->fetchAll($select);
     }
