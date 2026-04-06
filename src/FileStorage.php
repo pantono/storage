@@ -203,6 +203,14 @@ class FileStorage
     private function getMimeFromExtension(string $filename): ?string
     {
         $types = new MimeTypes();
-        return $types->guessMimeType($filename);
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        if (!$extension) {
+            return null;
+        }
+        $result = $types->getMimeTypes($extension);
+        if (sizeof($result) == 0) {
+            return null;
+        }
+        return $result[0];
     }
 }
