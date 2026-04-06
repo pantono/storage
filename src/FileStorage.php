@@ -66,7 +66,6 @@ class FileStorage
         $file->setFilesize(mb_strlen($fileData));
         $file->setFileData($fileData);
         $file->setUri($uri);
-        $this->saveFile($file);
         $mime = $this->getMimeType($fileData);
         if ($mime) {
             $file->setMimeType($mime);
@@ -74,6 +73,7 @@ class FileStorage
         if (!$file->getMimeType()) {
             $file->setMimeType($this->getMimeFromExtension($filename));
         }
+        $this->saveFile($file);
         return $file;
     }
 
