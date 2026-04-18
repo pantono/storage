@@ -15,7 +15,7 @@ use League\Flysystem\Visibility;
 use Symfony\Component\Console\Output\OutputInterface;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemException;
-use Symfony\Component\Mime\MimeTypes;
+use Pantono\Storage\Helper\MimeTypeHelper;
 
 class FileStorage
 {
@@ -66,12 +66,9 @@ class FileStorage
         $file->setFilesize(mb_strlen($fileData));
         $file->setFileData($fileData);
         $file->setUri($uri);
-        $mime = $this->getMimeType($fileData);
+        $mime = MimeTypeHelper::guessMimeType($filename, $fileData);
         if ($mime) {
             $file->setMimeType($mime);
-        }
-        if (!$file->getMimeType()) {
-            $file->setMimeType($this->getMimeFromExtension($filename));
         }
         $this->saveFile($file);
         return $file;
@@ -188,29 +185,5 @@ class FileStorage
         $event->setCurrent($file);
         $event->setPrevious($previous);
         $this->dispatcher->dispatch($event);
-    }
-
-    private function getMimeType(string $fileData): ?string
-    {
-        if ($fileData === '') {
-            return null;
-        }
-
-        $fInfo = new \finfo(FILEINFO_MIME_TYPE);
-        return $fInfo->buffer($fileData) ?: null;
-    }
-
-    private function getMimeFromExtension(string $filename): ?string
-    {
-        $types = new MimeTypes();
-        $extension = pathinfo($filename, PATHINFO_EXTENSION);
-        if (!$extension) {
-            return null;
-        }
-        $result = $types->getMimeTypes($extension);
-        if (sizeof($result) == 0) {
-            return null;
-        }
-        return $result[0];
     }
 }
