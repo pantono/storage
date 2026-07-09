@@ -16,6 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemException;
 use Pantono\Storage\Helper\MimeTypeHelper;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileStorage
 {
@@ -37,6 +38,31 @@ class FileStorage
         $this->filesystem = $filesystem;
     }
 
+    public function uploadFileFromRequest(UploadedFile $uploadedFile, string $visibility = Visibility::PRIVATE): StoredFile
+    {
+        $remoteFilename = $uploadedFile->getClientOriginalName();
+        $this->filesystem->write($remoteFilename, $uploadedFile->getContent(), [
+            'params' => [
+                'ACL' => $visibility
+            ]
+        ]);
+        $uri = $this->filesystem->publicUrl($remoteFilename);
+        $file = new StoredFile();
+        $file->setOriginalFilename($uploadedFile->getClientOriginalName());
+        $file->setDateUploaded(new \DateTimeImmutable());
+        $file->setFilename($remoteFilename);
+        $file->setBucket('');
+        $file->setFilesize(mb_strlen($uploadedFile->getContent()));
+        $file->setFileData($uploadedFile->getContent());
+        $file->setUri($uri);
+        $mime = MimeTypeHelper::guessMimeType($uploadedFile->getClientOriginalName(), $uploadedFile->getContent());
+        if ($mime) {
+            $file->setMimeType($mime);
+        }
+        $this->saveFile($file);
+        return $file;
+    }
+
     public function uploadFile(
         string $filename,
         string $fileData,
@@ -55,7 +81,7 @@ class FileStorage
                 $remoteFilename = $info['filename'] . '-' . uniqid() . '.' . $info['extension'];
             }
         }
-        $additionalConfig['visibility'] = $visibility;
+        $additionalConfig['params']['visibility'] = $visibility;
         $this->filesystem->write($remoteFilename, $fileData, $additionalConfig);
         $uri = $this->filesystem->publicUrl($remoteFilename);
         $file = new StoredFile();
