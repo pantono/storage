@@ -17,6 +17,7 @@ use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemException;
 use Pantono\Storage\Helper\MimeTypeHelper;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Pantono\Storage\Exception\FileUploadError;
 
 class FileStorage
 {
@@ -40,6 +41,9 @@ class FileStorage
 
     public function uploadFileFromRequest(UploadedFile $uploadedFile, string $visibility = Visibility::PRIVATE): StoredFile
     {
+        if ($uploadedFile->getError()) {
+            throw new FileUploadError($uploadedFile->getErrorMessage());
+        }
         $remoteFilename = $uploadedFile->getClientOriginalName();
         $this->filesystem->write($remoteFilename, $uploadedFile->getContent(), [
             'params' => [
