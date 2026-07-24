@@ -18,39 +18,48 @@ use League\Flysystem\FilesystemException;
 use Pantono\Storage\Helper\MimeTypeHelper;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Pantono\Storage\Exception\FileUploadError;
+use Pantono\Storage\Model\StoredFileService;
+use Pantono\Logger\Logger;
+use Psr\Container\ContainerInterface;
+use Pantono\Storage\Factory\FileSystemFactory;
+use Pantono\Storage\Exception\NoFileServiceAvailable;
 
 class FileStorage
 {
     private FileStorageRepository $repository;
     private Hydrator $hydrator;
     private EventDispatcher $dispatcher;
-    private Filesystem $filesystem;
+    private Logger $logger;
+    private ContainerInterface $container;
 
     public function __construct(
         FileStorageRepository $repository,
         Hydrator              $hydrator,
         EventDispatcher       $dispatcher,
-        Filesystem            $filesystem
+        Logger                $logger,
+        ContainerInterface    $container
     )
     {
         $this->repository = $repository;
         $this->hydrator = $hydrator;
         $this->dispatcher = $dispatcher;
-        $this->filesystem = $filesystem;
+        $this->logger = $logger;
+        $this->container = $container;
     }
 
-    public function uploadFileFromRequest(UploadedFile $uploadedFile, string $visibility = Visibility::PRIVATE): StoredFile
+    public function uploadFileFromRequest(UploadedFile $uploadedFile, string $visibility = Visibility::PRIVATE, ?StoredFileService $service = null): StoredFile
     {
         if ($uploadedFile->getError()) {
             throw new FileUploadError($uploadedFile->getErrorMessage());
         }
         $remoteFilename = $uploadedFile->getClientOriginalName();
-        $this->filesystem->write($remoteFilename, $uploadedFile->getContent(), [
+        $fileSystem = $this->getFilesystemForService($service);
+        $fileSystem->write($remoteFilename, $uploadedFile->getContent(), [
             'params' => [
                 'ACL' => $visibility
             ]
         ]);
-        $uri = $this->filesystem->publicUrl($remoteFilename);
+        $uri = $fileSystem->publicUrl($remoteFilename);
         $file = new StoredFile();
         $file->setOriginalFilename($uploadedFile->getClientOriginalName());
         $file->setDateUploaded(new \DateTimeImmutable());
@@ -68,11 +77,12 @@ class FileStorage
     }
 
     public function uploadFile(
-        string $filename,
-        string $fileData,
-        bool   $uniqueSuffix = true,
-        string $visibility = Visibility::PRIVATE,
-        array  $additionalConfig = []
+        string             $filename,
+        string             $fileData,
+        bool               $uniqueSuffix = true,
+        string             $visibility = Visibility::PRIVATE,
+        array              $additionalConfig = [],
+        ?StoredFileService $service = null
     ): StoredFile
     {
 
@@ -86,8 +96,9 @@ class FileStorage
             }
         }
         $additionalConfig['params']['visibility'] = $visibility;
-        $this->filesystem->write($remoteFilename, $fileData, $additionalConfig);
-        $uri = $this->filesystem->publicUrl($remoteFilename);
+        $fileSystem = $this->getFilesystemForService($service);
+        $fileSystem->write($remoteFilename, $fileData, $additionalConfig);
+        $uri = $fileSystem->publicUrl($remoteFilename);
         $file = new StoredFile();
         $file->setOriginalFilename($filename);
         $file->setDateUploaded(new \DateTimeImmutable());
@@ -114,16 +125,18 @@ class FileStorage
 
     public function getFileData(StoredFile $file): string
     {
-        return $this->filesystem->read($file->getFilename());
+        $fileSystem = $this->getFilesystemForService($file->getStorageService());
+        return $fileSystem->read($file->getFilename());
     }
 
-    public function openFileForUser(StoredFile $storedFile, UserInterface $user, ?\DateTimeImmutable $expiryDate = null): string
+    public function openFileForUser(StoredFile $file, UserInterface $user, ?\DateTimeImmutable $expiryDate = null): string
     {
+        $fileSystem = $this->getFilesystemForService($file->getStorageService());
         if ($expiryDate === null) {
             $expiryDate = new \DateTimeImmutable('+30 minute');
         }
-        $uri = $this->filesystem->temporaryUrl($storedFile->getFilename(), $expiryDate);
-        $this->repository->logFileAccess($storedFile, $user->getId(), $uri, $expiryDate);
+        $uri = $fileSystem->temporaryUrl($file->getFilename(), $expiryDate);
+        $this->repository->logFileAccess($file, $user->getId(), $uri, $expiryDate);
         return $uri;
     }
 
@@ -154,9 +167,10 @@ class FileStorage
         return $this->hydrator->hydrateSet(StoredFile::class, $this->repository->getFilesByFilter($filter));
     }
 
-    public function syncFiles(string $path = '/', ?OutputInterface $output = null): void
+    public function syncFiles(string $path = '/', ?OutputInterface $output = null, ?StoredFileService $service = null): void
     {
-        $listing = $this->filesystem->listContents($path);
+        $fileSystem = $this->getFilesystemForService($service);
+        $listing = $fileSystem->listContents($path);
         foreach ($listing->getIterator() as $file) {
             /**
              * @var FileAttributes $file
@@ -169,7 +183,7 @@ class FileStorage
                     $newFile->setFilesize($file->fileSize());
                     $newFile->setOriginalFilename($file->path());
                     try {
-                        $newFile->setUri($this->filesystem->publicUrl($file->path()));
+                        $newFile->setUri($fileSystem->publicUrl($file->path()));
                     } catch (FilesystemException $e) {
                         continue;
                     }
@@ -215,5 +229,28 @@ class FileStorage
         $event->setCurrent($file);
         $event->setPrevious($previous);
         $this->dispatcher->dispatch($event);
+    }
+
+    public function getFilesystemForService(?StoredFileService $service = null): ?Filesystem
+    {
+        if (!$service) {
+            $service = $this->getDefaultStorageService();
+        }
+        if (!$service) {
+            throw new NoFileServiceAvailable('No file service has been configured');
+        }
+        $key = 'file_storage_service_' . $service->getId();
+        if ($this->container->has($key)) {
+            return $this->container->get($key);
+        }
+        $factory = new FileSystemFactory($service->getInterpolatedDsn(), $this->logger, $service->getAdapterOptions(), $service->getOptions());
+        $this->container[$key] = $factory->createInstance();
+
+        return $this->container[$key];
+    }
+
+    public function getDefaultStorageService(): ?StoredFileService
+    {
+        return $this->hydrator->hydrate(StoredFileService::class, $this->repository->getDefaultStorageService());
     }
 }

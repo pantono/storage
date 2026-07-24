@@ -9,6 +9,7 @@ use Pantono\Storage\FileStorage;
 use Pantono\Contracts\Attributes\Lazy;
 use Pantono\Contracts\Attributes\FieldName;
 use Pantono\Contracts\Attributes\DatabaseTable;
+use Pantono\Contracts\Attributes\Database\OneToOne;
 
 #[Locator(methodName: 'getFileById', className: FileStorage::class), DatabaseTable(table: 'stored_file', idColumn: 'id')]
 class StoredFile
@@ -27,6 +28,8 @@ class StoredFile
     private ?string $mimeType = null;
     #[NoSave, Locator(methodName: 'getFileData', className: FileStorage::class), Lazy, FieldName('$this')]
     private ?string $fileData = null;
+    #[OneToOne(StoredFileService::class), FieldName('storage_service')]
+    private ?StoredFileService $storageService = null;
 
     public function getId(): ?int
     {
@@ -152,5 +155,15 @@ class StoredFile
 
         $fInfo = new \finfo(FILEINFO_MIME_TYPE);
         return $fInfo->buffer($this->getFileData()) ?: null;
+    }
+
+    public function getStorageService(): ?StoredFileService
+    {
+        return $this->storageService;
+    }
+
+    public function setStorageService(?StoredFileService $storageService): void
+    {
+        $this->storageService = $storageService;
     }
 }

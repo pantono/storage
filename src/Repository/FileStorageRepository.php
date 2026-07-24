@@ -78,4 +78,12 @@ class FileStorageRepository extends DefaultRepository
             'expiry_date' => $expiryDate->format('Y-m-d H:i:s')
         ]);
     }
+
+    /**
+     * @return array<mixed>|null
+     */
+    public function getDefaultStorageService(): ?array
+    {
+        return $this->selectSingleRow($this->pt('stored_file_service'), 'default', 1);
+    }
 }
