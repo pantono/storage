@@ -62,13 +62,7 @@ class FileStorageRepository extends DefaultRepository
             $select->andWhere('acl = :acl')
                 ->setParameter('acl', $filter->getAcl());
         }
-        $index = 0;
-        foreach ($filter->getColumns() as $column) {
-            $index++;
-            $select->andWhere($column['name'] . ' ' . $column['operator'] . ' :param_' . $index)
-                ->setParameter('param_' . $index, $column['value']);
-        }
-
+        $filter->applyColumnsToQueryBuilder($select);
         $this->applyCountAndLimit($select, $filter);
 
         return $this->getDb()->fetchAll($select);
