@@ -169,6 +169,7 @@ class FileStorage
 
     public function syncFiles(string $path = '/', ?OutputInterface $output = null, ?StoredFileService $service = null): void
     {
+        $service = $service ?? $this->getDefaultStorageService();
         $fileSystem = $this->getFilesystemForService($service);
         $listing = $fileSystem->listContents($path);
         foreach ($listing->getIterator() as $file) {
@@ -182,6 +183,7 @@ class FileStorage
                     $newFile->setFilename($file->path());
                     $newFile->setFilesize($file->fileSize());
                     $newFile->setOriginalFilename($file->path());
+                    $newFile->setStorageService($service);
                     try {
                         $newFile->setUri($fileSystem->publicUrl($file->path()));
                     } catch (FilesystemException $e) {
