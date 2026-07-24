@@ -251,6 +251,11 @@ class FileStorage
         return $this->container[$key];
     }
 
+    public function getServiceById(int $id): ?StoredFileService
+    {
+        return $this->hydrator->lookupRecord(StoredFileService::class, $id);
+    }
+
     public function getDefaultStorageService(): ?StoredFileService
     {
         return $this->hydrator->hydrate(StoredFileService::class, $this->repository->getDefaultStorageService());
