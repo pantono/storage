@@ -11,8 +11,8 @@ final class FileStorageServicesMigration extends BasePantonoMigration
         $this->table($this->addTablePrefix('stored_file_service'))
             ->addColumn('name', 'string')
             ->addColumn('dsn', 'string')
-            ->addColumn('adapter_options', 'json', ['default' => '{}}'])
-            ->addColumn('options', 'json', ['default' => '{}}'])
+            ->addColumn('adapter_options', 'json', ['default' => '{}'])
+            ->addColumn('options', 'json', ['default' => '{}'])
             ->addColumn('default', 'boolean')
             ->create();
 
