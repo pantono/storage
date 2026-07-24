@@ -184,6 +184,10 @@ class FileStorage
                     $newFile->setFilesize($file->fileSize());
                     $newFile->setOriginalFilename($file->path());
                     $newFile->setStorageService($service);
+                    $visibility = $file->visibility();
+                    if ($visibility) {
+                        $newFile->setAcl($visibility);
+                    }
                     $mime = MimeTypeHelper::guessMimeType($file->path());
                     if ($mime) {
                         $newFile->setMimeType($mime);
