@@ -35,32 +35,38 @@ class FileStorageRepository extends DefaultRepository
     {
         $select = $this->getDb()->select('f.*')->from('stored_file', 'f');
         if ($filter->getSearch()) {
-            $select->where('(filename like :search or original_filename like :search)')
+            $select->andWhere('(filename like :search or original_filename like :search)')
                 ->setParameter('search', '%' . $filter->getSearch() . '%');
         }
         if ($filter->getFilename()) {
-            $select->where('filename=:filename')
+            $select->andWhere('filename=:filename')
                 ->setParameter('filename', $filter->getFilename());
         }
         if ($filter->getOriginalFilename()) {
-            $select->where('original_filename=:original_filename')
+            $select->andWhere('original_filename=:original_filename')
                 ->setParameter('original_filename', $filter->getOriginalFilename());
         }
         if ($filter->getBucket()) {
-            $select->where('bucket=:bucket')
+            $select->andWhere('bucket=:bucket')
                 ->setParameter('bucket', $filter->getBucket());
         }
         if ($filter->getMinFilesize()) {
-            $select->where('filesize >= :min_filesize')
+            $select->andWhere('filesize >= :min_filesize')
                 ->setParameter('min_filesize', $filter->getMinFilesize());
         }
         if ($filter->getMaxFilesize()) {
-            $select->where('filesize <= :max_filesize')
+            $select->andWhere('filesize <= :max_filesize')
                 ->setParameter('max_filesize', $filter->getMaxFilesize());
         }
         if ($filter->getAcl()) {
-            $select->where('acl = :acl')
+            $select->andWhere('acl = :acl')
                 ->setParameter('acl', $filter->getAcl());
+        }
+        $index = 0;
+        foreach ($filter->getColumns() as $column) {
+            $index++;
+            $select->andWhere($column['name'] . ' ' . $column['operator'] . ' :param_' . $index)
+                ->setParameter('param_' . $index, $column['value']);
         }
 
         $this->applyCountAndLimit($select, $filter);

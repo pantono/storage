@@ -4,10 +4,11 @@ namespace Pantono\Storage\Filter;
 
 use Pantono\Database\Traits\Pageable;
 use Pantono\Contracts\Filter\PageableInterface;
+use Pantono\Database\Traits\ColumnFilter;
 
 class StoredFileFilter implements PageableInterface
 {
-    use Pageable;
+    use Pageable, ColumnFilter;
 
     private ?string $bucket = null;
     private ?string $filename = null;
