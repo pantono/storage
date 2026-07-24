@@ -184,6 +184,10 @@ class FileStorage
                     $newFile->setFilesize($file->fileSize());
                     $newFile->setOriginalFilename($file->path());
                     $newFile->setStorageService($service);
+                    $mime = MimeTypeHelper::guessMimeType($file->path());
+                    if ($mime) {
+                        $newFile->setMimeType($mime);
+                    }
                     try {
                         $newFile->setUri($fileSystem->publicUrl($file->path()));
                     } catch (FilesystemException $e) {
