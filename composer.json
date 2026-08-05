@@ -15,7 +15,7 @@
     "pantono/hydrator": "^1.0",
     "nyholm/dsn": "^2.0",
     "symfony/var-dumper": "^8.0",
-    "pantono/logger": "^0.0",
+    "pantono/logger": "^1",
     "ext-fileinfo": "*",
     "symfony/mime": "^8.0"
   },
