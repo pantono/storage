@@ -17,7 +17,7 @@ final class FileStorageServicesMigration extends BasePantonoMigration
             ->create();
 
         $this->table($this->addTablePrefix('stored_file'))
-            ->addLinkedColumn('storage_service', $this->addTablePrefix('stored_file_service'), 'id', ['null' => true])
+            ->addLinkedColumn('storage_service', $this->addTablePrefix('stored_file_service'), 'id', ['null' => true, 'signed' => false])
             ->update();
     }
 }
