@@ -65,6 +65,7 @@ class FileStorage
         $file->setDateUploaded(new \DateTimeImmutable());
         $file->setFilename($remoteFilename);
         $file->setBucket('');
+        $file->setStorageService($service ?? $this->getDefaultStorageService());
         $file->setFilesize(mb_strlen($uploadedFile->getContent()));
         $file->setFileData($uploadedFile->getContent());
         $file->setUri($uri);
@@ -104,6 +105,7 @@ class FileStorage
         $file->setDateUploaded(new \DateTimeImmutable());
         $file->setFilename($remoteFilename);
         $file->setBucket('');
+        $file->setStorageService($service ?? $this->getDefaultStorageService());
         $file->setFilesize(mb_strlen($fileData));
         $file->setFileData($fileData);
         $file->setUri($uri);
