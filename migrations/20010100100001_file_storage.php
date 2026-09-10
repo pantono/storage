@@ -22,7 +22,7 @@ final class FileStorage extends AbstractMigration
 
         $this->table('stored_file_access')
             ->addColumn('file_id', 'integer', ['signed' => false])
-            ->addColumn('uri', 'string', ['null' => true])
+            ->addColumn('uri', 'text', ['null' => true])
             ->addColumn('created_date', 'datetime')
             ->addColumn('expiry_date', 'datetime', ['null' => true])
             ->addColumn('user_id', 'integer', ['signed' => false])
