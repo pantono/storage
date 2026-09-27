@@ -10,8 +10,9 @@ use Pantono\Contracts\Attributes\Lazy;
 use Pantono\Contracts\Attributes\FieldName;
 use Pantono\Contracts\Attributes\DatabaseTable;
 use Pantono\Contracts\Attributes\Database\OneToOne;
+use Pantono\Contracts\Attributes\EagerLoad;
 
-#[Locator(methodName: 'getFileById', className: FileStorage::class), DatabaseTable(table: 'stored_file', idColumn: 'id')]
+#[DatabaseTable(table: 'stored_file', idColumn: 'id'), EagerLoad]
 class StoredFile
 {
     use SavableModel;
